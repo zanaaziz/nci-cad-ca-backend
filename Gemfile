@@ -41,3 +41,11 @@ group :development, :test do
 end
 
 
+
+gem "devise", "~> 4.9"
+
+gem "cancancan", "~> 3.6"
+
+gem "faker", "~> 3.5"
+
+gem "rspec-rails", "~> 7.1"
