@@ -1,31 +1,29 @@
 class TicketsController < ApplicationController
-  before_action :set_ticket, only: %i[ show update destroy ]
+  before_action :authenticate_user! # Require login
+  before_action :set_ticket, only: %i[show update destroy]
+  before_action :authorize_admin!, only: %i[index]
 
-  # GET /tickets
+  # GET /tickets (Admin only)
   def index
     @tickets = Ticket.all
-
     render json: @tickets
   end
 
-  # GET /tickets/1
-  def show
-    render json: @ticket
-  end
-
-  # POST /tickets
+  # POST /tickets (Regular users create tickets)
   def create
-    @ticket = Ticket.new(ticket_params)
+    @ticket = TicketFacade.create_ticket(ticket_params, current_user)
 
-    if @ticket.save
-      render json: @ticket, status: :created, location: @ticket
+    if @ticket.persisted?
+      render json: @ticket, status: :created
     else
       render json: @ticket.errors, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /tickets/1
+  # PUT /tickets/:id (Update ticket)
   def update
+    authorize_owner!
+
     if @ticket.update(ticket_params)
       render json: @ticket
     else
@@ -33,19 +31,28 @@ class TicketsController < ApplicationController
     end
   end
 
-  # DELETE /tickets/1
+  # DELETE /tickets/:id (Delete ticket)
   def destroy
-    @ticket.destroy!
+    authorize_owner!
+    @ticket.destroy
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_ticket
-      @ticket = Ticket.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def ticket_params
-      params.require(:ticket).permit(:name, :description, :user_id)
-    end
+  def set_ticket
+    @ticket = Ticket.find(params[:id])
+  end
+
+  def ticket_params
+    params.require(:ticket).permit(:name, :description)
+  end
+
+  def authorize_owner!
+    head :forbidden unless @ticket.user == current_user
+  end
+
+  def authorize_admin!
+    head :forbidden unless current_user.admin?
+  end
 end
