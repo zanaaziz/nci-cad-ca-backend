@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  tests:
+    env:
+      RAILS_ENV: test
+      SECRET_KEY_BASE: ${{ secrets.SECRET_KEY_BASE }}
+      DEVISE_JWT_SECRET_KEY: ${{ secrets.DEVISE_JWT_SECRET_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.4'
+          bundler-cache: true
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev nodejs
+
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Set up database
+        run: |
+          bundle exec rails db:migrate RAILS_ENV=test
+
+      # - name: Precompile assets (Optional for APIs)
+      #   if: "!contains(github.event.head_commit.message, '[skip ci]')"
+      #   run: bundle exec rails assets:precompile
+
+      - name: Run RSpec tests
+        run: bundle exec rspec spec/requests
