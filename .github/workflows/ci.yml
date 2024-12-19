@@ -23,7 +23,9 @@ jobs:
         run: bundle install
 
       - name: Set up database
-        run: bundle exec rails db:create RAILS_ENV=test bundle exec rails db:migrate RAILS_ENV=test
+        run: |
+          bundle exec rails db:create RAILS_ENV=test
+          bundle exec rails db:migrate RAILS_ENV=test
 
       - name: Run RSpec tests (Requests)
         run: bundle exec rspec spec/requests
