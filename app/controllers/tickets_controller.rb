@@ -1,9 +1,9 @@
 class TicketsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_ticket, only: %i[show update destroy]
-  before_action :authorize_access!, except: [:index]
+  before_action :authorize_access!, except: [:index, :create]
 
-  # GET /tickets (Admin only)
+  # GET /tickets
   def index
     if current_user.admin?
       # Admin users can see all tickets
@@ -20,7 +20,7 @@ class TicketsController < ApplicationController
     end
   end
 
-  # POST /tickets (Regular users create tickets)
+  # POST /tickets
   def create
     @ticket = TicketFacade.create_ticket(ticket_params, current_user)
 
@@ -31,12 +31,12 @@ class TicketsController < ApplicationController
     end
   end
 
-  # GET /tickets/:id (Show ticket)
+  # GET /tickets/:id
   def show
     render json: @ticket, status: :ok
   end
 
-  # PUT /tickets/:id (Update ticket)
+  # PUT /tickets/:id
   def update
     if @ticket.update(ticket_params)
       render json: @ticket
@@ -45,7 +45,7 @@ class TicketsController < ApplicationController
     end
   end
 
-  # DELETE /tickets/:id (Delete ticket)
+  # DELETE /tickets/:id
   def destroy
     @ticket.destroy
     render json: { message: 'Deleted.' }, status: :ok

@@ -2,7 +2,7 @@ class MessagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_ticket
   before_action :set_message, only: [:destroy]
-  before_action :authorize_access!
+  before_action :authorize_access!, except: [:create]
 
   # GET /tickets/:ticket_id/messages
   def index
