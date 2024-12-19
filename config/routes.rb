@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  devise_for :users, defaults: { format: :json }
+  devise_for :users, defaults: { format: :json }, controllers: {
+    sessions: 'users/sessions',
+  }
   
   resources :tickets do
     resources :messages, only: %i[create index]
