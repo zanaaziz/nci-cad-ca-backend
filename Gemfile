@@ -49,3 +49,5 @@ gem "cancancan", "~> 3.6"
 gem "faker", "~> 3.5"
 
 gem "rspec-rails", "~> 7.1"
+
+gem "devise-jwt", "~> 0.12.1"
