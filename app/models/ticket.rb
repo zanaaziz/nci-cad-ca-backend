@@ -4,4 +4,5 @@ class Ticket < ApplicationRecord
 
   validates :name, presence: true
   validates :description, presence: true
+  validates :sentiment, numericality: { only_integer: true, allow_nil: true }
 end

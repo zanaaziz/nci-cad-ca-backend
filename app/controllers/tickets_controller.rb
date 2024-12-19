@@ -58,7 +58,7 @@ class TicketsController < ApplicationController
   end
 
   def ticket_params
-    params.require(:ticket).permit(:name, :description)
+    params.require(:ticket).permit(:name, :description, :sentiment)
   end
 
   def authorize_access!
