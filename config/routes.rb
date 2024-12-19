@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   }
   
   resources :tickets do
-    resources :messages, only: %i[create index]
+    resources :messages, only: %i[create index destroy]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

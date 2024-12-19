@@ -1,12 +1,23 @@
 class TicketsController < ApplicationController
-  before_action :authenticate_user! # Require login
+  before_action :authenticate_user!
   before_action :set_ticket, only: %i[show update destroy]
-  before_action :authorize_admin!, only: %i[index]
+  before_action :authorize_access!, except: [:index]
 
   # GET /tickets (Admin only)
   def index
-    @tickets = Ticket.all
-    render json: @tickets
+    if current_user.admin?
+      # Admin users can see all tickets
+      @tickets = Ticket.includes(:user).all.order(created_at: :desc)
+
+      render json: @tickets.as_json(
+        except: [:user_id],
+        include: { user: { only: [:id, :email, :role] } }
+      ), status: :ok
+    else
+      # Regular users can see only their own tickets
+      @tickets = current_user.tickets
+      render json: @tickets, status: :ok
+    end
   end
 
   # POST /tickets (Regular users create tickets)
@@ -20,10 +31,13 @@ class TicketsController < ApplicationController
     end
   end
 
+  # GET /tickets/:id (Show ticket)
+  def show
+    render json: @ticket, status: :ok
+  end
+
   # PUT /tickets/:id (Update ticket)
   def update
-    authorize_owner!
-
     if @ticket.update(ticket_params)
       render json: @ticket
     else
@@ -33,9 +47,8 @@ class TicketsController < ApplicationController
 
   # DELETE /tickets/:id (Delete ticket)
   def destroy
-    authorize_owner!
     @ticket.destroy
-    head :no_content
+    render json: { message: 'Deleted.' }, status: :ok
   end
 
   private
@@ -48,11 +61,9 @@ class TicketsController < ApplicationController
     params.require(:ticket).permit(:name, :description)
   end
 
-  def authorize_owner!
-    head :forbidden unless @ticket.user == current_user
-  end
-
-  def authorize_admin!
-    head :forbidden unless current_user.admin?
+  def authorize_access!
+    if !current_user.admin? && @ticket.user != current_user
+      return render json: { error: 'You are not authorized to access this item.' }, status: :forbidden
+    end
   end
 end
