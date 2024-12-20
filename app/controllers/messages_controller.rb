@@ -6,7 +6,7 @@ class MessagesController < ApplicationController
 
   # GET /tickets/:ticket_id/messages
   def index
-    @messages = @ticket.messages.includes(:user).order(created_at: :desc)
+    @messages = @ticket.messages.includes(:user)
     render json: @messages, include: :user
   end
 
@@ -25,7 +25,7 @@ class MessagesController < ApplicationController
     end
 
     if @message.save
-      render json: @message, status: :created
+      render json: @message, include: :user, status: :created
     else
       render json: @message.errors, status: :unprocessable_entity
     end
